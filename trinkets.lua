@@ -3,8 +3,8 @@ sArena.Trinkets = CreateFrame("Frame", nil, sArena)
 
 sArena.Defaults.Trinkets = {
 	enabled = true,
-		scale = 1,
-		alwaysShow = true,
+	scale = 1,
+	alwaysShow = true,
 }
 
 function sArena.Trinkets:Initialize()
