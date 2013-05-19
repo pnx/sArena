@@ -55,6 +55,7 @@ function sArena.Trinkets:CreateIcon(frame)
 	
 	local id = frame:GetID()
 	self["arena"..id] = trinket
+	self["arena"..id.."time"] = nil
 end
 
 function sArena.Trinkets:Test(numOpps)
@@ -137,11 +138,15 @@ sArena.Trinkets:SetScript("OnEvent", function(self, event, ...) return self[even
 
 function sArena.Trinkets:UNIT_SPELLCAST_SUCCEEDED(unitID, spell)
 	if not sArena.Trinkets[unitID] then return end
-	
-	if spell == GetSpellInfo(42292) or spell == GetSpellInfo(59752) then -- Trinket and EMFH
-		CooldownFrame_SetTimer(self[unitID], GetTime(), 120, 1)
-	--[[elseif spell == GetSpellInfo(7744) then -- WOTF
-		CooldownFrame_SetTimer(self[unitID], GetTime(), 30, 1)]]
+
+	if (spell == GetSpellInfo(42292) or spell == GetSpellInfo(59752)) then -- Trinket and EMFH
+		local time = GetTime()
+		CooldownFrame_SetTimer(self[unitID], time, 120, 1)
+		self[unitID.."time"] = time
+	elseif (spell == GetSpellInfo(7744) -- WOTF
+		-- Make sure we do not set the cd if Trinket is already on cd.
+		and (not self[unitID.."time"] or GetTime() - self[unitID.."time"] > 120)) then 
+		CooldownFrame_SetTimer(self[unitID], GetTime(), 30, 1)
 	end
 end
 
@@ -151,6 +156,7 @@ function sArena.Trinkets:PLAYER_ENTERING_WORLD()
 		self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 		for i = 1, MAX_ARENA_ENEMIES do
 			self["arena"..i]:SetCooldown(0, 0)
+			self["arena"..i.."time"] = nil
 		end
 	elseif ( self:IsEventRegistered("UNIT_SPELLCAST_SUCCEEDED") ) then
 		self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
